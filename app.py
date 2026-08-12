@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from math import radians, sin, cos, sqrt, atan2
-from streamlit_geolocation import streamlit_geolocation
+from streamlit_js_eval import get_geolocation
 
 # ==========================================================
 # CONFIGURACIÓN
@@ -212,16 +212,32 @@ st.markdown(
 # ==========================================================
 st.markdown('<div class="section-title">📡 Obtener ubicación</div>', unsafe_allow_html=True)
 
-col_btn, col_msg = st.columns([1, 3], vertical_alignment="center")
-with col_btn:
-    ubicacion = streamlit_geolocation()
-mensaje = col_msg.empty()
-mensaje.caption("Presiona el ícono 📍 y acepta el permiso de ubicación de tu navegador.")
+if "geo_intentos" not in st.session_state:
+    st.session_state.geo_intentos = 0
 
-if ubicacion and ubicacion.get("latitude") is not None:
-    nueva_coord = (ubicacion["latitude"], ubicacion["longitude"])
-    if st.session_state.get("ultima_deteccion") != nueva_coord:
-        st.session_state.ultima_deteccion = nueva_coord
+col_btn, col_msg = st.columns([1, 3], vertical_alignment="center")
+mensaje = col_msg.empty()
+
+with col_btn:
+    if st.button("📍  Usar mi ubicación", type="primary", use_container_width=True):
+        st.session_state.geo_intentos += 1
+        st.session_state.buscando_ubicacion = True
+
+if not st.session_state.get("buscando_ubicacion"):
+    mensaje.caption("Presiona el botón y acepta el permiso de ubicación de tu navegador.")
+
+if st.session_state.get("buscando_ubicacion"):
+    mensaje.info("🔄 Obteniendo tu ubicación… si tu navegador pide permiso, acéptalo.")
+    resultado = get_geolocation(component_key=f"geo_{st.session_state.geo_intentos}")
+
+    if resultado is not None:
+        if "coords" in resultado:
+            lat_usuario = resultado["coords"]["latitude"]
+            lon_usuario = resultado["coords"]["longitude"]
+            st.session_state.ultima_deteccion = (lat_usuario, lon_usuario)
+        elif "error" in resultado:
+            st.session_state.geo_error = resultado["error"]["message"]
+            st.session_state.pop("ultima_deteccion", None)
 
 if st.session_state.get("ultima_deteccion"):
     lat_usuario, lon_usuario = st.session_state.ultima_deteccion
@@ -256,6 +272,15 @@ if st.session_state.get("ultima_deteccion"):
         [{"lat": e["lat"], "lon": e["lon"], "color": "#2FD9A8", "size": 140} for e in top3]
     )
     st.map(mapa_df, latitude="lat", longitude="lon", color="color", size="size")
+
+elif st.session_state.get("geo_error"):
+    mensaje.error(
+        f"⚠️ No se pudo obtener tu ubicación ({st.session_state.geo_error}). "
+        "Revisa que hayas dado permiso de ubicación a este sitio en tu navegador "
+        "y que el GPS/servicio de ubicación de tu dispositivo esté activo, luego "
+        "presiona el botón de nuevo."
+    )
+    st.info("⬅️ Presiona el botón de ubicación para intentarlo de nuevo.")
 
 else:
     st.info("⬅️ Presiona el botón de ubicación para ver las estaciones más cercanas a ti.")

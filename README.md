@@ -6,12 +6,14 @@ distancia real con la fórmula de Haversine.
 
 ## Cómo funciona
 
-1. El usuario presiona el ícono de ubicación 📍 y autoriza el permiso de
-   geolocalización del navegador — la app detecta su latitud/longitud
-   automáticamente (no requiere escribir coordenadas).
-2. En cuanto detecta la ubicación, calcula la distancia entre esa
+1. El usuario presiona el botón **"Usar mi ubicación"** y autoriza el
+   permiso de geolocalización del navegador — la app detecta su
+   latitud/longitud automáticamente (no requiere escribir coordenadas).
+2. Si el usuario deniega el permiso o su navegador no lo soporta, la app
+   muestra un mensaje claro para que lo intente de nuevo.
+3. En cuanto detecta la ubicación, calcula la distancia entre esa
    coordenada y cada estación policial registrada.
-3. Muestra las 3 estaciones más cercanas en tarjetas con medalla (🥇🥈🥉) y
+4. Muestra las 3 estaciones más cercanas en tarjetas con medalla (🥇🥈🥉) y
    distancia en km, junto con un mapa con la ubicación del usuario y las
    estaciones encontradas.
 
