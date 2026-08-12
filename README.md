@@ -14,13 +14,14 @@ distancia real con la fórmula de Haversine.
 
 ## Estaciones registradas
 
-| Estación | Ciudad |
-|---|---|
-| Estación de Policía Barrio El Manchén | Tegucigalpa |
-| Posta Policial (Centro) | San Pedro Sula |
-| Policía Nacional Santa Bárbara UMEP 16 | Santa Bárbara |
-| Posta Policial Bonitillo | La Ceiba |
-| Posta Policial (Centro) | Choluteca |
+La base incluye **37 estaciones reales** distribuidas en los **18
+departamentos** de Honduras (Atlántida, Choluteca, Colón, Comayagua, Copán,
+Cortés, El Paraíso, Francisco Morazán, Gracias a Dios, Intibucá, Islas de la
+Bahía, La Paz, Lempira, Ocotepeque, Olancho, Santa Bárbara, Valle y Yoro),
+con varias estaciones adicionales alrededor de Santa Bárbara y Comayagua
+para mayor precisión en esas zonas. La lista completa está dentro de `app.py` (variable
+`ESTACIONES`) y también se puede ver dentro de la propia aplicación en el
+desplegable "Ver todas las estaciones registradas".
 
 ## Instalación y ejecución local
 
