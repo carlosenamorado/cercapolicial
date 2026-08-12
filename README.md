@@ -6,11 +6,18 @@ distancia real con la fórmula de Haversine.
 
 ## Cómo funciona
 
-1. El usuario ingresa su latitud y longitud.
+1. El usuario presiona el ícono de ubicación y autoriza el permiso de
+   geolocalización del navegador — la app detecta su latitud/longitud
+   automáticamente. También puede ingresarlas o ajustarlas manualmente.
 2. Al presionar **Buscar**, la app calcula la distancia entre esa coordenada
    y cada estación policial registrada.
 3. Muestra las 3 estaciones más cercanas ordenadas por distancia, y las
    ubica en un mapa junto con la ubicación ingresada.
+
+> **Nota:** la geolocalización del navegador solo funciona sobre HTTPS (como
+> Streamlit Community Cloud) o en localhost, y requiere que el usuario
+> conceda el permiso cuando el navegador lo solicite. Si lo deniega, puede
+> seguir usando la opción de ingresar las coordenadas manualmente.
 
 ## Estaciones registradas
 

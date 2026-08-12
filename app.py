@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from math import radians, sin, cos, sqrt, atan2
+from streamlit_geolocation import streamlit_geolocation
 
 # ==========================================================
 # CONFIGURACIÓN
@@ -103,16 +104,46 @@ with st.expander("📍 Ver todas las estaciones registradas"):
 
 st.subheader("Ingresa tu ubicación")
 
+st.markdown("**Opción 1 — Detectar automáticamente** (te pedirá permiso del navegador)")
+
+col_geo, col_info = st.columns([1, 4])
+with col_geo:
+    ubicacion = streamlit_geolocation()
+
+if "lat_input" not in st.session_state:
+    st.session_state.lat_input = 15.5044
+if "lon_input" not in st.session_state:
+    st.session_state.lon_input = -88.0250
+
+if ubicacion and ubicacion.get("latitude") is not None:
+    nueva_coord = (ubicacion["latitude"], ubicacion["longitude"])
+    if st.session_state.get("ultima_deteccion") != nueva_coord:
+        st.session_state.lat_input = nueva_coord[0]
+        st.session_state.lon_input = nueva_coord[1]
+        st.session_state.ultima_deteccion = nueva_coord
+        st.session_state.geo_ok = True
+
+if st.session_state.get("geo_ok"):
+    with col_info:
+        st.success(
+            f"📍 Ubicación detectada: {st.session_state.lat_input:.6f}, "
+            f"{st.session_state.lon_input:.6f}"
+        )
+else:
+    with col_info:
+        st.caption("Presiona el ícono de ubicación y acepta el permiso del navegador.")
+
+st.markdown("**Opción 2 — Ingresar manualmente** (o ajustar la ubicación detectada)")
 col1, col2 = st.columns(2)
 with col1:
     lat_usuario = st.number_input(
         "Latitud", min_value=-90.0, max_value=90.0,
-        value=15.5044, format="%.6f"
+        format="%.6f", key="lat_input"
     )
 with col2:
     lon_usuario = st.number_input(
         "Longitud", min_value=-180.0, max_value=180.0,
-        value=-88.0250, format="%.6f"
+        format="%.6f", key="lon_input"
     )
 
 buscar = st.button("🔍 Buscar", type="primary", use_container_width=True)
