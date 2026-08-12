@@ -7,14 +7,96 @@ from streamlit_geolocation import streamlit_geolocation
 # CONFIGURACIÓN
 # ==========================================================
 st.set_page_config(
-    page_title="Estaciones Policiales más Cercanas - Honduras",
+    page_title="Estaciones Policiales Cercanas · Honduras",
     page_icon="🚓",
-    layout="centered"
+    layout="wide"
 )
 
 # ==========================================================
+# ESTILOS PERSONALIZADOS
+# ==========================================================
+st.markdown("""
+<style>
+    #MainMenu, footer, header {visibility: hidden;}
+
+    .block-container {
+        padding-top: 2.2rem;
+        max-width: 1100px;
+    }
+
+    .hero-title {
+        font-size: 2.4rem;
+        font-weight: 800;
+        margin-bottom: 0.1rem;
+    }
+    .hero-subtitle {
+        color: #9AA4AF;
+        font-size: 1.05rem;
+        margin-bottom: 1.8rem;
+        max-width: 640px;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-top: 1.6rem;
+        margin-bottom: 0.6rem;
+    }
+
+    div[data-testid="stButton"] > button {
+        background: linear-gradient(135deg, #2FD9A8, #1FB88A);
+        color: #06231A;
+        font-weight: 700;
+        border: none;
+        border-radius: 12px;
+        padding: 0.7rem 1.4rem;
+        font-size: 1.05rem;
+        box-shadow: 0 4px 14px rgba(47, 217, 168, 0.25);
+        transition: transform 0.15s ease;
+    }
+    div[data-testid="stButton"] > button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(47, 217, 168, 0.35);
+    }
+
+    .station-card {
+        background: #171B24;
+        border: 1px solid #262C38;
+        border-radius: 16px;
+        padding: 1.1rem 1.2rem;
+        height: 100%;
+    }
+    .station-card.rank-1 { border-left: 5px solid #FFD54A; }
+    .station-card.rank-2 { border-left: 5px solid #C7CDD6; }
+    .station-card.rank-3 { border-left: 5px solid #E0A15C; }
+
+    .medal { font-size: 1.6rem; margin-bottom: 0.3rem; }
+    .station-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .station-city { color: #9AA4AF; font-size: 0.9rem; margin-bottom: 0.6rem; }
+    .station-distance {
+        display: inline-block;
+        background: rgba(47, 217, 168, 0.12);
+        color: #2FD9A8;
+        font-weight: 700;
+        padding: 0.25rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.9rem;
+    }
+
+    .sidebar-badge {
+        background: #171B24;
+        border: 1px solid #262C38;
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        margin-bottom: 0.7rem;
+    }
+    .sidebar-badge b { color: #2FD9A8; }
+</style>
+""", unsafe_allow_html=True)
+
+# ==========================================================
 # LISTA DE ESTACIONES POLICIALES (Honduras)
-# Datos reales tomados de Google Maps
+# Datos reales tomados de Google Maps — 18 departamentos
 # ==========================================================
 ESTACIONES = [
     # --- Francisco Morazán ---
@@ -78,7 +160,7 @@ ESTACIONES = [
 # CÁLCULO DE DISTANCIA (fórmula de Haversine)
 # ==========================================================
 def distancia_km(lat1, lon1, lat2, lon2):
-    R = 6371.0  # radio de la Tierra en km
+    R = 6371.0
     lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
     dlat = lat2 - lat1
     dlon = lon2 - lon1
@@ -86,93 +168,97 @@ def distancia_km(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
 
+DEPARTAMENTOS = sorted({e["ciudad"].split(",")[-1].strip() for e in ESTACIONES})
+
 # ==========================================================
-# INTERFAZ
+# SIDEBAR
 # ==========================================================
-st.title("🚓 Estaciones Policiales más Cercanas")
+with st.sidebar:
+    st.markdown("### ℹ️ Información")
+    st.markdown(
+        f'<div class="sidebar-badge">✅ <b>{len(ESTACIONES)}</b> estaciones cargadas</div>',
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        '<div class="sidebar-badge">📡 Datos: ubicaciones reales verificadas</div>',
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        f'<div class="sidebar-badge">🗺️ Cobertura: {len(DEPARTAMENTOS)} departamentos de Honduras</div>',
+        unsafe_allow_html=True
+    )
+    with st.expander("Ver estaciones registradas"):
+        st.dataframe(
+            pd.DataFrame(ESTACIONES)[["nombre", "ciudad"]],
+            hide_index=True,
+            use_container_width=True
+        )
+    st.markdown("---")
+    st.caption("Proyecto académico · Servicio en la Nube")
+    st.caption("Streamlit Community Cloud")
+
+# ==========================================================
+# ENCABEZADO
+# ==========================================================
+st.markdown('<div class="hero-title">🚓 Estaciones Policiales Cercanas</div>', unsafe_allow_html=True)
 st.markdown(
-    "Servicio en la nube que ubica las **3 estaciones policiales más cercanas** "
-    "a una coordenada dada, en cualquier punto de Honduras."
+    '<div class="hero-subtitle">Detecta tu ubicación con un clic y encuentra al instante '
+    'las 3 estaciones policiales más cercanas en cualquier punto de Honduras.</div>',
+    unsafe_allow_html=True
 )
 
-with st.expander("📍 Ver todas las estaciones registradas"):
-    st.dataframe(
-        pd.DataFrame(ESTACIONES)[["nombre", "ciudad", "lat", "lon"]],
-        hide_index=True,
-        use_container_width=True
-    )
+# ==========================================================
+# GEOLOCALIZACIÓN
+# ==========================================================
+st.markdown('<div class="section-title">📡 Obtener ubicación</div>', unsafe_allow_html=True)
 
-st.subheader("Ingresa tu ubicación")
-
-st.markdown("**Opción 1 — Detectar automáticamente** (te pedirá permiso del navegador)")
-
-col_geo, col_info = st.columns([1, 4])
-with col_geo:
+col_btn, col_msg = st.columns([1, 3], vertical_alignment="center")
+with col_btn:
     ubicacion = streamlit_geolocation()
-
-if "lat_input" not in st.session_state:
-    st.session_state.lat_input = 15.5044
-if "lon_input" not in st.session_state:
-    st.session_state.lon_input = -88.0250
+mensaje = col_msg.empty()
+mensaje.caption("Presiona el ícono 📍 y acepta el permiso de ubicación de tu navegador.")
 
 if ubicacion and ubicacion.get("latitude") is not None:
     nueva_coord = (ubicacion["latitude"], ubicacion["longitude"])
     if st.session_state.get("ultima_deteccion") != nueva_coord:
-        st.session_state.lat_input = nueva_coord[0]
-        st.session_state.lon_input = nueva_coord[1]
         st.session_state.ultima_deteccion = nueva_coord
-        st.session_state.geo_ok = True
 
-if st.session_state.get("geo_ok"):
-    with col_info:
-        st.success(
-            f"📍 Ubicación detectada: {st.session_state.lat_input:.6f}, "
-            f"{st.session_state.lon_input:.6f}"
-        )
-else:
-    with col_info:
-        st.caption("Presiona el ícono de ubicación y acepta el permiso del navegador.")
+if st.session_state.get("ultima_deteccion"):
+    lat_usuario, lon_usuario = st.session_state.ultima_deteccion
+    mensaje.success(f"📍 Ubicación detectada: {lat_usuario:.5f}, {lon_usuario:.5f}")
 
-st.markdown("**Opción 2 — Ingresar manualmente** (o ajustar la ubicación detectada)")
-col1, col2 = st.columns(2)
-with col1:
-    lat_usuario = st.number_input(
-        "Latitud", min_value=-90.0, max_value=90.0,
-        format="%.6f", key="lat_input"
+    # ---------- RESULTADOS ----------
+    resultados = sorted(
+        ESTACIONES,
+        key=lambda e: distancia_km(lat_usuario, lon_usuario, e["lat"], e["lon"])
     )
-with col2:
-    lon_usuario = st.number_input(
-        "Longitud", min_value=-180.0, max_value=180.0,
-        format="%.6f", key="lon_input"
-    )
-
-buscar = st.button("🔍 Buscar", type="primary", use_container_width=True)
-
-if buscar:
-    resultados = []
-    for est in ESTACIONES:
-        d = distancia_km(lat_usuario, lon_usuario, est["lat"], est["lon"])
-        resultados.append({**est, "distancia_km": d})
-
-    resultados.sort(key=lambda x: x["distancia_km"])
     top3 = resultados[:3]
 
-    st.subheader("🏆 3 estaciones más cercanas")
-    for i, est in enumerate(top3, start=1):
-        st.markdown(
-            f"**{i}. {est['nombre']}** — {est['ciudad']}  \n"
-            f"📏 {est['distancia_km']:.2f} km de distancia"
-        )
+    st.markdown('<div class="section-title">🏆 Estaciones más cercanas</div>', unsafe_allow_html=True)
+    medallas = ["🥇", "🥈", "🥉"]
+    ranks = ["rank-1", "rank-2", "rank-3"]
+    cols = st.columns(3)
+    for col, medalla, rank, est in zip(cols, medallas, ranks, top3):
+        d = distancia_km(lat_usuario, lon_usuario, est["lat"], est["lon"])
+        with col:
+            st.markdown(f"""
+            <div class="station-card {rank}">
+                <div class="medal">{medalla}</div>
+                <div class="station-name">{est['nombre']}</div>
+                <div class="station-city">📍 {est['ciudad']}</div>
+                <div class="station-distance">📏 {d:.2f} km</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-    st.subheader("🗺️ Mapa")
+    st.markdown('<div class="section-title">🗺️ Mapa</div>', unsafe_allow_html=True)
     mapa_df = pd.DataFrame(
-        [{"lat": lat_usuario, "lon": lon_usuario, "tipo": "Tu ubicación"}] +
-        [{"lat": e["lat"], "lon": e["lon"], "tipo": e["nombre"]} for e in top3]
+        [{"lat": lat_usuario, "lon": lon_usuario, "color": "#FF5C5C", "size": 220}] +
+        [{"lat": e["lat"], "lon": e["lon"], "color": "#2FD9A8", "size": 140} for e in top3]
     )
-    st.map(mapa_df[["lat", "lon"]], size=40)
+    st.map(mapa_df, latitude="lat", longitude="lon", color="color", size="size")
 
 else:
-    st.info("⬅️ Ingresa tu latitud y longitud, y presiona **Buscar**.")
+    st.info("⬅️ Presiona el botón de ubicación para ver las estaciones más cercanas a ti.")
 
 st.divider()
 st.caption("Proyecto académico — Servicio en la Nube · Estaciones Policiales de Honduras")

@@ -6,18 +6,27 @@ distancia real con la fórmula de Haversine.
 
 ## Cómo funciona
 
-1. El usuario presiona el ícono de ubicación y autoriza el permiso de
+1. El usuario presiona el ícono de ubicación 📍 y autoriza el permiso de
    geolocalización del navegador — la app detecta su latitud/longitud
-   automáticamente. También puede ingresarlas o ajustarlas manualmente.
-2. Al presionar **Buscar**, la app calcula la distancia entre esa coordenada
-   y cada estación policial registrada.
-3. Muestra las 3 estaciones más cercanas ordenadas por distancia, y las
-   ubica en un mapa junto con la ubicación ingresada.
+   automáticamente (no requiere escribir coordenadas).
+2. En cuanto detecta la ubicación, calcula la distancia entre esa
+   coordenada y cada estación policial registrada.
+3. Muestra las 3 estaciones más cercanas en tarjetas con medalla (🥇🥈🥉) y
+   distancia en km, junto con un mapa con la ubicación del usuario y las
+   estaciones encontradas.
 
 > **Nota:** la geolocalización del navegador solo funciona sobre HTTPS (como
 > Streamlit Community Cloud) o en localhost, y requiere que el usuario
-> conceda el permiso cuando el navegador lo solicite. Si lo deniega, puede
-> seguir usando la opción de ingresar las coordenadas manualmente.
+> conceda el permiso cuando el navegador lo solicite, y que el GPS/servicio
+> de ubicación del dispositivo esté activo.
+
+## Diseño de la interfaz
+
+La app usa un tema oscuro personalizado (`.streamlit/config.toml`) con un
+color de acento verde-turquesa, tarjetas con jerarquía visual por rango
+(oro/plata/bronce), y una barra lateral con estadísticas rápidas de la base
+de datos — siguiendo principios de UX como jerarquía visual, contraste y
+feedback inmediato al usuario.
 
 ## Estaciones registradas
 
@@ -36,6 +45,9 @@ desplegable "Ver todas las estaciones registradas".
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+El tema visual se aplica automáticamente desde `.streamlit/config.toml` —
+asegúrate de subir esa carpeta oculta también al repositorio de GitHub.
 
 ## Despliegue en Streamlit Community Cloud
 
